@@ -4,10 +4,8 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.temporal.Temporal;
 import java.time.temporal.TemporalUnit;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Main {
@@ -34,6 +32,33 @@ public class Main {
         flights.stream().filter(f -> f.getDate().isAfter(LocalDate.of(2018, 8, 6))).forEach(System.out::println);
         System.out.println("--------------------------------");
         System.out.println(getFlightHigherOccupation(LocalDate.now().plusDays(1)));
+
+        System.out.println(totalDuration());
+        System.out.println("---------------------------");
+        List<String> dests = getDests();
+        System.out.println(dests);
+
+        printFlightsByDest();
+    }
+
+    private void printFlightsByDest() {
+        flights.stream()
+                .collect(Collectors.groupingBy(Flight::getDestination))
+                .entrySet()
+                .forEach(System.out::println);
+    }
+
+    private List<String> getDests() {
+        return flights.stream()
+                    .map(Flight::getDestination)
+                    .distinct()
+                    .collect(Collectors.toList());
+    }
+
+    private Duration totalDuration() {
+        return flights.stream()
+                .map(Flight::getDuration)
+                .reduce(Duration.ZERO, Duration::plus);
     }
 
     public Flight getFlightHigherOccupation(LocalDate f) {
@@ -41,5 +66,13 @@ public class Main {
                 .filter(x -> x.getDate().equals(f))
                 .max(Comparator.comparingDouble(Flight::getOccupation));
         return max.orElseGet(Flight::nullFlight);
+    }
+
+    public Double getHigherOccupation(LocalDate f) {
+        return flights.stream()
+                .filter(x->x.getDate().equals(f))
+                .mapToDouble(Flight::getOccupation)
+                .max()
+                .orElse(-1);
     }
 }
